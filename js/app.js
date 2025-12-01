@@ -90,18 +90,18 @@ function getUserLocation() {
 
 async function fetchWeatherData() {
     try {
-        // Fetch current conditions and 4-day forecast from NEA API
-        const currentResponse = await fetch(CONFIG.API.WEATHER_2HR);
+        // Fetch current temperature and 4-day forecast from NEA API
+        const currentTempResponse = await fetch(CONFIG.API.WEATHER);
         const forecastResponse = await fetch(CONFIG.API.WEATHER_4DAY);
         
-        if (!currentResponse.ok || !forecastResponse.ok) {
+        if (!currentTempResponse.ok || !forecastResponse.ok) {
             throw new Error('Weather fetch failed');
         }
         
-        const currentData = await currentResponse.json();
+        const currentTempData = await currentTempResponse.json();
         const forecastData = await forecastResponse.json();
         
-        displayWeatherForecast(currentData, forecastData);
+        displayWeatherForecast(currentTempData, forecastData);
         console.log('🌤️ Weather data fetched successfully');
     } catch (error) {
         console.error('Weather fetch error:', error);
@@ -109,14 +109,35 @@ async function fetchWeatherData() {
     }
 }
 
-function displayWeatherForecast(currentData, forecastData) {
+function displayWeatherForecast(currentTempData, forecastData) {
     const weatherData = document.getElementById('weatherData');
     
     try {
+        // Extract current temperature from air-temperature API
+        let currentTemp = 'N/A';
+        if (currentTempData.items && currentTempData.items.length > 0) {
+            const readings = currentTempData.items[0].readings;
+            if (readings && readings.length > 0) {
+                // Get average or use East region reading
+                const eastReading = readings.find(r => r.station_id === 'S109') || readings[0];
+                currentTemp = eastReading.value;
+            }
+        }
+        
         // Extract 4-day forecast data
         const forecasts = forecastData.items[0].forecasts || [];
         
-        let html = '<div class="forecast-grid">';
+        let html = '<div class="forecast-container">';
+        
+        // Display current temperature header
+        html += `
+            <div class="current-temp">
+                <p class="current-label">Current Temperature</p>
+                <p class="current-value">${currentTemp}°C</p>
+            </div>
+        `;
+        
+        html += '<div class="forecast-grid">';
         
         // Display up to 4 days of forecast
         for (let i = 0; i < Math.min(4, forecasts.length); i++) {
@@ -128,6 +149,16 @@ function displayWeatherForecast(currentData, forecastData) {
             // Map weather forecast text to emoji
             const emoji = getWeatherEmoji(forecast.forecast);
             
+            // Parse temperature range safely
+            let tempRange = 'N/A';
+            if (forecast.temperature && Array.isArray(forecast.temperature) && forecast.temperature.length >= 2) {
+                tempRange = `${forecast.temperature[0]}°C - ${forecast.temperature[1]}°C`;
+            } else if (forecast.temperature && typeof forecast.temperature === 'object') {
+                const low = forecast.temperature.low || forecast.temperature.min || 'N/A';
+                const high = forecast.temperature.high || forecast.temperature.max || 'N/A';
+                tempRange = `${low}°C - ${high}°C`;
+            }
+            
             html += `
                 <div class="forecast-card">
                     <div class="forecast-day">${dayName}</div>
@@ -135,17 +166,19 @@ function displayWeatherForecast(currentData, forecastData) {
                     <div class="forecast-icon">${emoji}</div>
                     <div class="forecast-text">${forecast.forecast}</div>
                     <div class="forecast-temp">
-                        <span class="temp-label">Temp:</span>
-                        <span class="temp-value">${forecast.temperature[0]}°C - ${forecast.temperature[1]}°C</span>
+                        <span class="temp-label">Range:</span>
+                        <span class="temp-value">${tempRange}</span>
                     </div>
                 </div>
             `;
         }
         
-        html += '</div>';
+        html += '</div></div>';
         weatherData.innerHTML = html;
     } catch (error) {
         console.error('Error parsing weather data:', error);
+        console.log('Current temp data:', currentTempData);
+        console.log('Forecast data:', forecastData);
         displayWeatherError();
     }
 }
