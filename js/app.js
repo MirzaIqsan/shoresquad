@@ -90,12 +90,23 @@ function getUserLocation() {
 
 async function fetchWeatherData() {
     try {
+        // Show loading spinner
+        const weatherData = document.getElementById('weatherData');
+        weatherData.innerHTML = `
+            <div class="loading-container">
+                <div class="spinner"></div>
+                <span class="loading-text">Loading weather...</span>
+            </div>
+        `;
+        
         // Fetch current temperature and 4-day forecast from NEA API
-        const currentTempResponse = await fetch(CONFIG.API.WEATHER);
-        const forecastResponse = await fetch(CONFIG.API.WEATHER_4DAY);
+        const [currentTempResponse, forecastResponse] = await Promise.all([
+            fetch(CONFIG.API.WEATHER),
+            fetch(CONFIG.API.WEATHER_4DAY)
+        ]);
         
         if (!currentTempResponse.ok || !forecastResponse.ok) {
-            throw new Error('Weather fetch failed');
+            throw new Error('Weather API error');
         }
         
         const currentTempData = await currentTempResponse.json();
@@ -213,19 +224,20 @@ function displayWeatherError() {
 // ============================================
 
 function setupEventListeners() {
-    // Join cleanup buttons
-    const joinButtons = document.querySelectorAll('.join-btn');
-    joinButtons.forEach(button => {
-        button.addEventListener('click', (e) => handleJoinCleanup(e));
-    });
-    
-    // Main CTA button
-    const ctaButton = document.getElementById('joinBtn');
-    if (ctaButton) {
-        ctaButton.addEventListener('click', () => {
+    // Use event delegation for join buttons (more efficient than forEach)
+    document.addEventListener('click', (event) => {
+        const joinBtn = event.target.closest('.join-btn');
+        if (joinBtn) {
+            handleJoinCleanup(event);
+            return;
+        }
+        
+        // Main CTA button
+        if (event.target.id === 'joinBtn') {
             document.getElementById('upcoming').scrollIntoView({ behavior: 'smooth' });
-        });
-    }
+            return;
+        }
+    });
     
     // Mobile menu toggle
     const menuToggle = document.querySelector('.menu-toggle');
@@ -308,24 +320,30 @@ function renderStats() {
 
 function renderCrewSection() {
     const crewList = document.getElementById('crewList');
-    const noCrew = document.getElementById('no-crew-msg');
     
     if (appState.crew.length === 0) {
         crewList.innerHTML = '<p id="no-crew-msg">No crew members yet. Join a cleanup to start building your squad!</p>';
         return;
     }
     
-    noCrew?.remove();
+    // Only update if there are crew members
+    // Use fragment to batch DOM updates for performance
+    const fragment = document.createDocumentFragment();
     
-    const crewHTML = appState.crew.map(member => `
-        <li class="crew-member" role="listitem">
+    appState.crew.forEach(member => {
+        const li = document.createElement('li');
+        li.className = 'crew-member';
+        li.setAttribute('role', 'listitem');
+        li.innerHTML = `
             <h4>${member.name}</h4>
             <p>${member.cleanup}</p>
             <p style="font-size: 0.8rem; margin-top: 0.5rem;">${member.joined}</p>
-        </li>
-    `).join('');
+        `;
+        fragment.appendChild(li);
+    });
     
-    crewList.innerHTML = crewHTML;
+    crewList.innerHTML = '';
+    crewList.appendChild(fragment);
 }
 
 // ============================================
