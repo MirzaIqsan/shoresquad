@@ -293,17 +293,96 @@ section h2 {
 .weather-widget h3 {
     color: white;
     margin-bottom: var(--spacing-md);
+    font-size: var(--font-size-lg);
 }
 
 .weather-data {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: var(--spacing-md);
 }
 
-.weather-data p {
+.forecast-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.forecast-card {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    padding: var(--spacing-md);
+    text-align: center;
+    backdrop-filter: blur(10px);
+    transition: var(--transition);
+}
+
+.forecast-card:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.forecast-day {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.95);
+    margin-bottom: var(--spacing-xs);
+}
+
+.forecast-date {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: var(--spacing-sm);
+}
+
+.forecast-icon {
+    font-size: 2.5rem;
+    margin: var(--spacing-sm) 0;
+}
+
+.forecast-text {
+    font-size: 0.85rem;
     color: rgba(255, 255, 255, 0.9);
-    margin: 0;
+    margin-bottom: var(--spacing-sm);
+    min-height: 2.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.forecast-temp {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    font-size: 0.8rem;
+}
+
+.temp-label {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.temp-value {
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.weather-error {
+    background: rgba(255, 255, 255, 0.15);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    padding: var(--spacing-lg);
+    text-align: center;
+}
+
+.weather-error p {
+    color: rgba(255, 255, 255, 0.95);
+    margin: var(--spacing-sm) 0;
+}
+
+.error-note {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8) !important;
 }
 
 /* ============================================
@@ -493,6 +572,10 @@ footer {
 
     .google-maps-container {
         height: 300px;
+    }
+
+    .forecast-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .cleanup-list {

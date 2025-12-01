@@ -5,11 +5,13 @@
 // Configuration
 const CONFIG = {
     API: {
-        WEATHER: 'https://api.open-meteo.com/v1/forecast',
+        WEATHER: 'https://api.data.gov.sg/v1/environment/air-temperature',
+        WEATHER_2HR: 'https://api.data.gov.sg/v1/environment/2-hour-weather-forecast',
+        WEATHER_4DAY: 'https://api.data.gov.sg/v1/environment/4-day-weather-forecast',
     },
     MAP: {
-        DEFAULT_LAT: 34.0195,
-        DEFAULT_LNG: -118.4912,
+        DEFAULT_LAT: 1.381497,
+        DEFAULT_LNG: 103.955574,
         ZOOM: 10,
     },
 };
@@ -71,65 +73,106 @@ function getUserLocation() {
             },
             (error) => {
                 console.warn('Geolocation error:', error);
-                // Use default location (Venice Beach)
+                // Use default location (Pasir Ris, Singapore)
                 appState.userLocation = {
                     lat: CONFIG.MAP.DEFAULT_LAT,
                     lng: CONFIG.MAP.DEFAULT_LNG,
                 };
+                console.log('📍 Using default location: Pasir Ris');
             }
         );
     }
 }
 
 // ============================================
-// Weather Data
+// Weather Data - NEA API Integration
 // ============================================
 
 async function fetchWeatherData() {
     try {
-        // Use open-meteo free API (no key required)
-        const lat = appState.userLocation?.lat || CONFIG.MAP.DEFAULT_LAT;
-        const lng = appState.userLocation?.lng || CONFIG.MAP.DEFAULT_LNG;
+        // Fetch current conditions and 4-day forecast from NEA API
+        const currentResponse = await fetch(CONFIG.API.WEATHER_2HR);
+        const forecastResponse = await fetch(CONFIG.API.WEATHER_4DAY);
         
-        const url = `${CONFIG.API.WEATHER}?latitude=${lat}&longitude=${lng}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`;
+        if (!currentResponse.ok || !forecastResponse.ok) {
+            throw new Error('Weather fetch failed');
+        }
         
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Weather fetch failed');
+        const currentData = await currentResponse.json();
+        const forecastData = await forecastResponse.json();
         
-        const data = await response.json();
-        displayWeather(data);
+        displayWeatherForecast(currentData, forecastData);
+        console.log('🌤️ Weather data fetched successfully');
     } catch (error) {
         console.error('Weather fetch error:', error);
         displayWeatherError();
     }
 }
 
-function displayWeather(data) {
+function displayWeatherForecast(currentData, forecastData) {
     const weatherData = document.getElementById('weatherData');
-    const daily = data.daily;
     
-    let html = '';
-    for (let i = 0; i < 3; i++) {
-        const date = new Date(daily.time[i]);
-        const maxTemp = daily.temperature_2m_max[i];
-        const minTemp = daily.temperature_2m_min[i];
-        const precipitation = daily.precipitation_sum[i];
+    try {
+        // Extract 4-day forecast data
+        const forecasts = forecastData.items[0].forecasts || [];
         
-        html += `
-            <div class="weather-item">
-                <p><strong>${date.toLocaleDateString()}</strong></p>
-                <p>🌡️ ${maxTemp}°C / ${minTemp}°C</p>
-                <p>💧 ${precipitation}mm</p>
-            </div>
-        `;
+        let html = '<div class="forecast-grid">';
+        
+        // Display up to 4 days of forecast
+        for (let i = 0; i < Math.min(4, forecasts.length); i++) {
+            const forecast = forecasts[i];
+            const date = new Date(forecast.date + 'T12:00:00');
+            const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+            const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            
+            // Map weather forecast text to emoji
+            const emoji = getWeatherEmoji(forecast.forecast);
+            
+            html += `
+                <div class="forecast-card">
+                    <div class="forecast-day">${dayName}</div>
+                    <div class="forecast-date">${dateStr}</div>
+                    <div class="forecast-icon">${emoji}</div>
+                    <div class="forecast-text">${forecast.forecast}</div>
+                    <div class="forecast-temp">
+                        <span class="temp-label">Temp:</span>
+                        <span class="temp-value">${forecast.temperature[0]}°C - ${forecast.temperature[1]}°C</span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        html += '</div>';
+        weatherData.innerHTML = html;
+    } catch (error) {
+        console.error('Error parsing weather data:', error);
+        displayWeatherError();
     }
+}
+
+function getWeatherEmoji(weatherText) {
+    // Map NEA weather descriptions to emojis
+    const text = weatherText.toLowerCase();
     
-    weatherData.innerHTML = html;
+    if (text.includes('clear') || text.includes('sunny')) return '☀️';
+    if (text.includes('partly cloudy')) return '⛅';
+    if (text.includes('cloudy') || text.includes('overcast')) return '☁️';
+    if (text.includes('rain') || text.includes('thunder')) return '🌧️';
+    if (text.includes('storm')) return '⛈️';
+    if (text.includes('wind')) return '💨';
+    if (text.includes('fog') || text.includes('haze')) return '🌫️';
+    
+    return '🌤️'; // default
 }
 
 function displayWeatherError() {
     const weatherData = document.getElementById('weatherData');
-    weatherData.innerHTML = '<p>Unable to load weather data. Please try again later.</p>';
+    weatherData.innerHTML = `
+        <div class="weather-error">
+            <p>⚠️ Unable to load weather forecast</p>
+            <p class="error-note">Please check your connection or try refreshing the page</p>
+        </div>
+    `;
 }
 
 // ============================================
