@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Rally your crew, track weather, and hit the next beach cleanup with ShoreSquad - the dope map app for ocean advocates!">
+    <meta name="theme-color" content="#0066CC">
+    <title>ShoreSquad - Beach Cleanup Made Social</title>
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Leaflet.js for maps -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon">🌊</span>
+                <span class="logo-text">ShoreSquad</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#map" aria-current="page">Map</a></li>
+                <li><a href="#upcoming">Upcoming</a></li>
+                <li><a href="#crew">My Crew</a></li>
+                <li><a href="#stats">Impact</a></li>
+            </ul>
+            <button class="menu-toggle" aria-label="Toggle menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" aria-label="Hero section">
+        <div class="hero-content">
+            <h1>Rally Your Crew.<br>Clean the Shore.</h1>
+            <p>Track weather, find beaches, and make eco-action fun and connected.</p>
+            <button class="cta-button" id="joinBtn" aria-label="Join cleanup">Join a Cleanup Today</button>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Map Section -->
+        <section id="map" class="map-section" aria-labelledby="map-heading">
+            <h2 id="map-heading">Find Nearby Cleanups</h2>
+            <div id="mapContainer" class="map-container" role="region" aria-label="Interactive map">
+                <div id="map"></div>
+            </div>
+            <div class="weather-widget" role="region" aria-label="Weather information">
+                <h3>Weather Forecast</h3>
+                <div id="weatherData" class="weather-data">
+                    <p aria-live="polite">Loading weather...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Upcoming Cleanups Section -->
+        <section id="upcoming" class="upcoming-section" aria-labelledby="upcoming-heading">
+            <h2 id="upcoming-heading">Upcoming Cleanups Near You</h2>
+            <div id="upcomingList" class="cleanup-list" role="list">
+                <div class="cleanup-card" role="listitem">
+                    <h3>Venice Beach Cleanup</h3>
+                    <p><strong>Date:</strong> <time datetime="2025-12-07">December 7, 2025</time></p>
+                    <p><strong>Time:</strong> 9:00 AM - 12:00 PM</p>
+                    <p><strong>Crew Size:</strong> 12 people</p>
+                    <button class="join-btn" aria-label="Join Venice Beach cleanup">Join Crew</button>
+                </div>
+                <div class="cleanup-card" role="listitem">
+                    <h3>Santa Monica Pier Cleanup</h3>
+                    <p><strong>Date:</strong> <time datetime="2025-12-14">December 14, 2025</time></p>
+                    <p><strong>Time:</strong> 10:00 AM - 1:00 PM</p>
+                    <p><strong>Crew Size:</strong> 8 people</p>
+                    <button class="join-btn" aria-label="Join Santa Monica cleanup">Join Crew</button>
+                </div>
+                <div class="cleanup-card" role="listitem">
+                    <h3>Malibu Beach Restoration</h3>
+                    <p><strong>Date:</strong> <time datetime="2025-12-21">December 21, 2025</time></p>
+                    <p><strong>Time:</strong> 2:00 PM - 5:00 PM</p>
+                    <p><strong>Crew Size:</strong> 15 people</p>
+                    <button class="join-btn" aria-label="Join Malibu cleanup">Join Crew</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- My Crew Section -->
+        <section id="crew" class="crew-section" aria-labelledby="crew-heading">
+            <h2 id="crew-heading">Your Crew</h2>
+            <div id="crewList" class="crew-members" role="list">
+                <p id="no-crew-msg">No crew members yet. Join a cleanup to start building your squad!</p>
+            </div>
+        </section>
+
+        <!-- Impact Stats Section -->
+        <section id="stats" class="stats-section" aria-labelledby="stats-heading">
+            <h2 id="stats-heading">Your Impact</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="cleanups-count">0</div>
+                    <p class="stat-label">Cleanups Joined</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="trash-collected">0</div>
+                    <p class="stat-label">lbs Trash Collected</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="crew-size">0</div>
+                    <p class="stat-label">Crew Members</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="points-earned">0</div>
+                    <p class="stat-label">Points Earned 🎖️</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer role="contentinfo">
+        <div class="footer-content">
+            <p>&copy; 2025 ShoreSquad. Rally your crew. Clean the shore.</p>
+            <ul class="footer-links">
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="#privacy">Privacy</a></li>
+            </ul>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/app.js" defer></script>
+</body>
+</html>
