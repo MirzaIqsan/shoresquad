@@ -37,9 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initializeApp() {
-    // Initialize map
-    initializeMap();
-    
     // Get user location
     getUserLocation();
     
@@ -82,81 +79,6 @@ function getUserLocation() {
             }
         );
     }
-}
-
-let map;
-
-function initializeMap() {
-    // Initialize Leaflet map
-    const defaultLocation = [CONFIG.MAP.DEFAULT_LAT, CONFIG.MAP.DEFAULT_LNG];
-    
-    map = L.map('map').setView(defaultLocation, CONFIG.MAP.ZOOM);
-    
-    // Add tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19,
-    }).addTo(map);
-    
-    // Add markers for cleanups
-    addCleanupMarkers();
-    
-    // Lazy load strategy: only fetch data when map is ready
-    map.on('load', () => {
-        console.log('🗺️ Map loaded');
-    });
-}
-
-function updateMapCenter() {
-    if (map && appState.userLocation) {
-        const center = [appState.userLocation.lat, appState.userLocation.lng];
-        map.setView(center, CONFIG.MAP.ZOOM);
-        
-        // Add user marker
-        L.circleMarker(center, {
-            radius: 8,
-            fillColor: '#0066CC',
-            color: '#00BCD4',
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.8,
-        })
-        .bindPopup('📍 You are here')
-        .addTo(map);
-    }
-}
-
-function addCleanupMarkers() {
-    // Sample cleanup locations
-    const cleanups = [
-        { name: 'Venice Beach', lat: 33.9850, lng: -118.4695 },
-        { name: 'Santa Monica Pier', lat: 34.0089, lng: -118.4965 },
-        { name: 'Malibu Beach', lat: 34.0295, lng: -118.6819 },
-    ];
-    
-    cleanups.forEach((cleanup, index) => {
-        const marker = L.marker([cleanup.lat, cleanup.lng])
-            .bindPopup(`<strong>${cleanup.name}</strong><br>Click to join cleanup`)
-            .addTo(map);
-        
-        // Add click handler for performance
-        marker.on('click', () => handleCleanupMarkerClick(cleanup));
-    });
-}
-
-function handleCleanupMarkerClick(cleanup) {
-    console.log('Cleanup selected:', cleanup.name);
-    // Highlight relevant cleanup in list
-    const cards = document.querySelectorAll('.cleanup-card');
-    cards.forEach(card => {
-        if (card.querySelector('h3').textContent.includes(cleanup.name)) {
-            card.scrollIntoView({ behavior: 'smooth' });
-            card.style.boxShadow = '0 0 20px rgba(244, 208, 63, 0.8)';
-            setTimeout(() => {
-                card.style.boxShadow = '';
-            }, 2000);
-        }
-    });
 }
 
 // ============================================
